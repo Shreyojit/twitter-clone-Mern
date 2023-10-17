@@ -7,6 +7,9 @@ import {
   getAllTweets,
   getUserTweets,
   getExploreTweets,
+  getTrendingTags,
+  search,
+  getByTag,
 } from "../controllers/tweet.js";
 
 const router = express.Router();
@@ -28,4 +31,10 @@ router.get("/user/all/:id", getUserTweets);
 
 //explore
 router.get("/explore", getExploreTweets);
+router.get("/trending_tags", getTrendingTags)
+
+router.get("/search", search);
+router.get("/tags", getByTag)
+
+
 export default router;

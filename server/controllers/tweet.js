@@ -78,3 +78,55 @@ export const getExploreTweets = async (req, res, next) => {
     handleError(500, err);
   }
 };
+
+export const getTrendingTags = async (req,res,next) => {
+  try {
+    const tagsData = await Tweet.aggregate([
+      {
+        $unwind: "$tags", // Separate tags into individual documents
+      },
+      {
+        $group: {
+          _id: "$tags",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { count: -1 }, // Sort by count in descending order
+      },
+      {
+        $limit: 5, // Limit the results to the top 5 tags
+      },
+    ]);
+
+    const topTags = tagsData.map((tag) => tag._id);
+
+    console.log("Top 5 Tags:", topTags);
+
+    res.status(200).json(topTags);
+  } catch (err) {
+    handleError(500, err);
+  }
+  }
+
+  export const getByTag = async (req, res, next) => {
+    const tags = req.query.tags.split(",");
+    try {
+      const tweets = await Tweet.find({ tags: { $in: tags } }).limit(20);
+      res.status(200).json(tweets);
+    } catch (err) {
+      handleError(500, err);
+    }
+  };
+  
+  export const search = async (req, res, next) => {
+    const query = req.query.q;
+    try {
+      const tweets = await Tweet.find({
+        description: { $regex: query, $options: "i" },
+      }).limit(10);
+      res.status(200).json(tweets);
+    } catch (err) {
+      handleError(500, err);
+    }
+  };

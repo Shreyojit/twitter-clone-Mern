@@ -3,23 +3,44 @@ import { handleError } from "../error.js";
 import User from "../models/User.js";
 
 export const createTweet = async (req, res, next) => {
-  const newTweet = new Tweet(req.body);
-  try {
-    const savedTweet = await newTweet.save();
-    res.status(200).json(savedTweet);
-  } catch (err) {
-    handleError(500, err);
-  }
+   // Extracting the tweet data from the request body
+   const { userId, description } = req.body;
+
+   // Regular expression to match hashtags
+   const hashtagRegex = /#(\w+(?:-\w+)*)/g;
+
+   
+   // Extracting tags from the description using the regular expression
+   const extractedTags = description.match(hashtagRegex);
+
+   const tagsWithoutHash = extractedTags?.map(tag => tag.slice(1));
+
+   // Filter out duplicates and create a unique set of tags
+   const uniqueTags = [...new Set(tagsWithoutHash)];
+
+   try {
+       // Creating a new tweet instance
+       const newTweet = new Tweet({
+           userId,
+           description,
+           tags: uniqueTags || [], // Including extracted tags; if not provided, defaults to an empty array
+       });
+
+       // Saving the tweet to the database
+       const savedTweet = await newTweet.save();
+
+       // Sending the saved tweet as a response
+       res.status(200).json(savedTweet);
+   } catch (err) {
+       handleError(500, err); // Assuming handleError is defined elsewhere for error handling
+   }
 };
 export const deleteTweet = async (req, res, next) => {
   try {
-    const tweet = await Tweet.findById(req.params.id);
-    if (tweet.userId === req.body.id) {
-      await tweet.deleteOne();
+    const tweet = await Tweet.findByIdAndDelete(req.params.id);
+
       res.status(200).json("tweet has been deleted");
-    } else {
-      handleError(500, err);
-    }
+    
   } catch (err) {
     handleError(500, err);
   }
@@ -39,6 +60,24 @@ export const likeOrDislike = async (req, res, next) => {
     handleError(500, err);
   }
 };
+
+
+export const RetweetOrRetrive = async (req, res, next) => {
+  try {
+    const tweet = await Tweet.findById(req.params.id);
+    if (!tweet.retweets.includes(req.body.id)) {
+      await tweet.updateOne({ $push: { retweets: req.body.id } });
+      res.status(200).json("tweet has been liked");
+    } else {
+      await tweet.updateOne({ $pull: { retweets: req.body.id } });
+      res.status(200).json("tweet has been disliked");
+    }
+  } catch (err) {
+    handleError(500, err);
+  }
+};
+
+
 
 export const getAllTweets = async (req, res, next) => {
   try {
@@ -130,3 +169,53 @@ export const getTrendingTags = async (req,res,next) => {
       handleError(500, err);
     }
   };
+
+
+  // Bookmark a tweet
+export const bookmarkTweet = async (req, res, next) => {
+  
+  console.log(req.params.id)
+  console.log(req.body.id)
+
+  try {
+    const tweet = await Tweet.findById(req.params.id);
+    if (!tweet.bookmarks.includes(req.body.id)) {
+      await tweet.updateOne({ $push: { bookmarks: req.body.id } });
+      res.status(200).json("Tweet has been bookmarked");
+    } else {
+      await tweet.updateOne({ $pull: { bookmarks: req.body.id } });
+      res.status(200).json("Bookmark removed");
+    }
+  } catch (err) {
+    handleError(500, err);
+  }
+};
+
+// Get bookmarked tweets for a user
+export const getBookmarkedTweets = async (req, res, next) => {
+  try {
+    const bookmarkedTweets = await Tweet.find({ bookmarks: req.params.userId });
+    res.status(200).json(bookmarkedTweets);
+  } catch (err) {
+    handleError(500, err);
+  }
+};
+
+export const removeBookmark = async (req, res, next) => {
+  try {
+    const tweet = await Tweet.findById(req.params.id);
+
+    // Check if the user's ID is in the bookmarks array
+    const index = tweet.bookmarks.indexOf(req.body.userId);
+    if (index > -1) {
+      tweet.bookmarks.splice(index, 1); // Remove the user's ID from bookmarks array
+      await tweet.save(); // Save the updated tweet
+
+      res.status(200).json('Bookmark removed');
+    } else {
+      res.status(200).json('Bookmark not found');
+    }
+  } catch (err) {
+    handleError(500, err); // Handle errors
+  }
+};

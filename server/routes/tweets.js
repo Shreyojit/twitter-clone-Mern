@@ -10,18 +10,24 @@ import {
   getTrendingTags,
   search,
   getByTag,
+  bookmarkTweet,
+  getBookmarkedTweets,
+  removeBookmark, 
+  RetweetOrRetrive,
 } from "../controllers/tweet.js";
 
 const router = express.Router();
 
 // Create a Tweet
-router.post("/", verifyToken, createTweet);
+router.post("/", createTweet);
 
 // Delete a Tweet
-router.delete("/:id", verifyToken, deleteTweet);
+router.delete("/:id", deleteTweet);
 
 // Like or Dislike a Tweet
 router.put("/:id/like", likeOrDislike);
+
+router.put("/:id/retweet", RetweetOrRetrive);
 
 // get all timeline tweets
 router.get("/timeline/:id", getAllTweets);
@@ -35,6 +41,13 @@ router.get("/trending_tags", getTrendingTags)
 
 router.get("/search", search);
 router.get("/tags", getByTag)
+
+router.put('/:id/bookmark', bookmarkTweet);
+
+// Route to get all bookmarked tweets for a user
+router.get('/bookmarks/:userId', getBookmarkedTweets);
+
+router.delete('/:id/bookmark', removeBookmark);
 
 
 export default router;

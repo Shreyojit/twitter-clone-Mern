@@ -7,6 +7,9 @@ import Explore from "./pages/Explore/Explore";
 import Signin from "./pages/Signin/Signin";
 import Navbar from "./components/Navbar/Navbar";
 import Error from "./pages/Error/Error";
+import Bookmarks from "./pages/Bookmarks/Bookmarks";
+import Messages from "./pages/Messages/Messages";
+import Search from "./pages/Search/Search";
 
 const Layout = () => {
   return (
@@ -34,6 +37,18 @@ const router = createBrowserRouter([
       {
         path: "/explore",
         element: <Explore />,
+      },
+      {
+        path: "/bookmarks",
+        element: <Bookmarks />,
+      },
+      {
+        path: "/messages",
+        element: <Messages />,
+      },
+      {
+        path: "/search",
+        element: <Search />,
       },
       {
         path: "/signin",

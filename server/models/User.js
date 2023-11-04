@@ -15,12 +15,8 @@ const UserSchema = new mongoose.Schema(
             required: true,
         },
         profilePicture: {type: String},
-        followers: { type:Array,
-        defaultValue: []},
-        following: {
-            type: Array,
-            defaultValue: [],
-        },
+        followers: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
+        following: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
         description:{
             type: String ,
         },

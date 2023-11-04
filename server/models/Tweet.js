@@ -15,6 +15,12 @@ const TweetSchema = new mongoose.Schema(
             type: Array,
             defaultValue: [],
         },
+
+        bookmarks: {
+            type: Array,
+            default: [],
+          },
+
         dislikes: {
             type: Array,
             defaultValue: [],

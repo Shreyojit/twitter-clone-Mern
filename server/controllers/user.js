@@ -117,3 +117,43 @@ export const follow = async (req, res, next) => {
           next(err);
         }
       };
+
+
+      export const numberOfFollowers = async (req, res, next) => {
+        try {
+            const user = await User.findById(req.params.id).populate("followers");
+            const followersCount = user.followers.length;
+            res.status(200).json({ followersCount });
+        } catch (err) {
+            next(err);
+        }
+    };
+    
+    // Get the count of following for a specific user
+    export const numberOfFollowing = async (req, res, next) => {
+        try {
+            const user = await User.findById(req.params.id).populate("following");
+            const followingCount = user.following.length;
+            res.status(200).json({ followingCount });
+        } catch (err) {
+            next(err);
+        }
+    };
+    
+  export const tweetCount = async (req,res,next) => {
+
+    try{
+      const userId = req.params.userId;
+
+      // Query the database to count the tweets for the specific user
+      const tweetCount = await Tweet.countDocuments({ userId });
+
+      res.status(200).json({ tweetCount });
+      
+
+
+    } catch(err) {
+      next(err)
+    }
+
+  }

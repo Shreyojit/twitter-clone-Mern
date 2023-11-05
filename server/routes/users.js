@@ -5,6 +5,9 @@ import {
   deleteUser,
   follow,
   unFollow,
+  numberOfFollowing,
+  numberOfFollowers,
+  tweetCount
 } from "../controllers/user.js";
 import { verifyToken } from "../verifyToken.js";
 
@@ -24,5 +27,12 @@ router.put("/follow/:id",  follow);
 
 // Unfollow
 router.put("/unfollow/:id",  unFollow);
+
+router.get("/:id/followersCount", numberOfFollowers)
+
+router.get("/:id/followingCount", numberOfFollowing)
+
+router.get('/:userId/tweetsCount',tweetCount)
+
 
 export default router;

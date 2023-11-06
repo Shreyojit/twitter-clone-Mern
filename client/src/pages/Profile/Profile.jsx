@@ -16,8 +16,40 @@ const Profile = () => {
   const [userTweets, setUserTweets] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
 
+
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [tweetsCount, setTweetsCount] = useState(0);
+
+  const { userId } = useParams();
+
+  
+  
   const { id } = useParams();
   const dispatch = useDispatch();
+    
+    
+    // Fetch followers count
+    
+  
+    
+    
+    useEffect(() => {
+        const fetchFollowers = async () => {
+            try {
+                const response = await axios.get(`http://localhost:8801/api/users/${id}/totalFollowers`);
+                setFollowersCount(response.data.totalFollowers);
+            } catch (error) {
+                console.error('Error fetching total followers:', error);
+                // Handle error
+            }
+        };
+
+        fetchFollowers();
+    }, []);
+
+
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,28 +65,49 @@ const Profile = () => {
     };
 
     fetchData();
-  }, [currentUser, id]);
+  }, [currentUser, id])
+
+  // const handleFollow = async () => {
+  //   if (!currentUser.following.includes(id)) {
+  //     try {
+  //       const follow = await axios.put(`http://localhost:8801/api/users/follow/${id}`, {
+  //         id: currentUser._id,
+  //       });
+  //       dispatch(following(id));
+  //     } catch (err) {
+  //       console.log("error", err);
+  //     }
+  //   } else {
+  //     try {
+  //       const unfollow = await axios.put(`http://localhost:8801/api/users/unfollow/${id}`, {
+  //         id: currentUser._id,
+  //       });
+
+  //       dispatch(following(id));
+  //     } catch (err) {
+  //       console.log("error", err);
+  //     }
+  //   }
+  // };
 
   const handleFollow = async () => {
-    if (!currentUser.following.includes(id)) {
-      try {
-        const follow = await axios.put(`http://localhost:8801/api/users/follow/${id}`, {
+    const isFollowing = currentUser.following.includes(id);
+  
+    try {
+      if (!isFollowing) {
+        await axios.put(`http://localhost:8801/api/users/follow/${id}`, {
           id: currentUser._id,
         });
-        dispatch(following(id));
-      } catch (err) {
-        console.log("error", err);
-      }
-    } else {
-      try {
-        const unfollow = await axios.put(`http://localhost:8801/api/users/unfollow/${id}`, {
+      } else {
+        await axios.put(`http://localhost:8801/api/users/unfollow/${id}`, {
           id: currentUser._id,
         });
-
-        dispatch(following(id));
-      } catch (err) {
-        console.log("error", err);
       }
+  
+      dispatch(following(id));
+    } catch (err) {
+      console.log("Error:", err);
+      // Handle the error as needed
     }
   };
 
@@ -93,6 +146,31 @@ const Profile = () => {
                 Follow
               </button>
             )}
+
+         <div className="flex justify-between items-center gap-1">
+         <button
+                className="px-4 -y-2 bg-blue-500 rounded-full text-white"
+                onClick={handleFollow}
+              > 
+              {tweetsCount} Tweets
+                </button>
+
+                <button
+                className="px-4 -y-2 bg-blue-500 rounded-full text-white"
+                
+              > 
+              {followersCount} Followers
+                </button>
+
+                <button
+                className="px-4 -y-2 bg-blue-500 rounded-full text-white"
+               
+              > 
+              {followingCount} Followings
+                </button>
+
+            </div>
+
           </div>
           <div className="mt-6">
             {userTweets &&

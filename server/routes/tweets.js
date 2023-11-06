@@ -14,6 +14,7 @@ import {
   getBookmarkedTweets,
   removeBookmark, 
   RetweetOrRetrive,
+  getSortedTweets,
 } from "../controllers/tweet.js";
 
 const router = express.Router();
@@ -48,6 +49,8 @@ router.put('/:id/bookmark', bookmarkTweet);
 router.get('/bookmarks/:userId', getBookmarkedTweets);
 
 router.delete('/:id/bookmark', removeBookmark);
+
+router.get('/sortedtweets', getSortedTweets)
 
 
 export default router;

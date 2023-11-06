@@ -219,3 +219,134 @@ export const removeBookmark = async (req, res, next) => {
     handleError(500, err); // Handle errors
   }
 };
+
+
+export const getSortedTweets = async (req, res, next) => {
+
+  
+  try {
+
+    const tagsData = await Tweet.aggregate([
+      {
+        $unwind: "$tags", // Separate tags into individual documents
+      },
+      {
+        $group: {
+          _id: "$tags",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { count: -1 }, // Sort by count in descending order
+      },
+      {
+        $limit: 5, // Limit the results to the top 5 tags
+      },
+    ]);
+
+    const topTags = tagsData?.map((tag) => tag._id);
+
+    console.log(topTags)
+
+    // const allTweets = await Tweet.find({});
+
+    // const tweetsWithCommonTags = [];
+
+    // allTweets.forEach((tweet) => {
+    //   const tweetTags = tweet.tags;
+    //   const commonTags = topTags.filter((tag) => tweetTags.includes(tag));
+
+    //   if (commonTags.length > 0) {
+    //     // If there are common tags, add the tweet to the array
+    //     tweetsWithCommonTags.push({
+    //       tweetId: tweet._id,
+    //       commonTags: commonTags,
+    //     });
+    //   }
+    // });
+
+    // console.log(tweetsWithCommonTags)
+
+
+
+
+    if (topTags.length > 0) {
+      const sortedTweets = await Tweet.aggregate([
+        {
+          $addFields: {
+            likesCount: { $size: "$likes" },
+            dislikesCount: { $size: "$dislikes" },
+            retweetsCount: { $size: "$retweets" },
+            followersCount: {
+              $cond: { if: { $isArray: "$userId" }, then: { $size: "$userId" }, else: 0 },
+            },
+            tweetWithCommonTags: {
+              $filter: {
+                input: "$tags",
+                as: "tag",
+                cond: { $in: ["$$tag", topTags] },
+              },
+            },
+          },
+        },
+        {
+          $sort: {
+            tweetWithCommonTags: -1, // Sort by trending tag presence, descending order
+            createdAt: -1, // Sort by creation date, descending order
+            likesCount: -1, // Sort by number of likes, descending order
+            retweetsCount: -1, // Sort by number of retweets, descending order
+            followersCount: -1, // Sort by follower count, descending order
+            dislikesCount: 1, // Sort by number of dislikes, ascending order
+          },
+        },
+      ]);
+
+      res.status(200).json(sortedTweets);
+    } else {
+      res.status(404).json({ message: "No top tags found." });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+
+
+
+//     const sortedTweets = await Tweet.aggregate([
+//       {
+//         $addFields: {
+//           likesCount: { $size: "$likes" },
+//           dislikesCount: { $size: "$dislikes" },
+//           retweetsCount: { $size: "$retweets" },
+//           followersCount: {
+//             $cond: { if: { $isArray: "$userId" }, then: { $size: "$userId" }, else: 0 },
+//           },
+//           tweetWithCommonTags: {
+//             $filter: {
+//               input: "$tags",
+//               as: "tag",
+//               cond: { $in: ["$$tag", topTags] },
+//             },
+//           },
+         
+//         },
+//       },
+//       {
+//         $sort: {
+//           tweetWithCommonTags:-1,// Sort by trending tag presence, descending order
+//           createdAt: -1, // Sort by creation date, descending order
+//           likesCount: -1, // Sort by number of likes, descending order
+//           retweetsCount: -1, // Sort by number of retweets, descending order
+//           followersCount: -1, // Sort by follower count, descending order
+//           dislikesCount: 1, // Sort by number of dislikes, ascending order
+//         },
+//       },
+//     ]);
+
+//     res.status(200).json(sortedTweets);
+//   } catch (err) {
+//     next(err);
+//   }
+// };

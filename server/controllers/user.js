@@ -70,30 +70,63 @@ export const deleteUser = async(req,res,next) => {
 
 
 
-export const follow = async (req, res, next) => {
+// export const follow = async (req, res, next) => {
  
-    console.log(req.body.id,req.params.id);
+//     console.log(req.body.id,req.params.id);
 
-    try {
-        const user = await User.findById(req.params.id); // Use req.params.id for route parameters
+//     try {
+//         const user = await User.findById(req.params.id); // Use req.params.id for route parameters
 
-        const currentUser = await User.findById(req.body.id); // Use req.body.id for data in the request body
+//         const currentUser = await User.findById(req.body.id); // Use req.body.id for data in the request body
              
-       console.log(currentUser, user)
+//        console.log(currentUser, user)
 
-        if (!user.followers.includes(req.body.id)) {
-            await user.updateOne({
-                $push: { followers: req.body.id },
-            });
-            await currentUser.updateOne({ $push: { following: req.params.id } });
-        } else {
-            res.status(403).json("You already follow this user");
-        }
-        res.status(200).json("Following the user!");
-    } catch (err) {
-        next(err);
-    }
-};
+//         if (!user.followers.includes(req.body.id)) {
+//             await user.updateOne({
+//                 $push: { followers: req.body.id },
+//             });
+//             await currentUser.updateOne({ $push: { following: req.params.id } });
+//         } else {
+//             res.status(403).json("You already follow this user");
+//         }
+//         res.status(200).json("Following the user!");
+//     } catch (err) {
+//         next(err);
+//     }
+// };
+
+
+
+export const follow = async (req, res, next) => {
+  const followerId = req.body.id;
+  const followeeId = req.params.id;
+
+  console.log("FollowerId="+followerId+"  FolloweeeId="+followeeId)
+
+  try {
+      const followee = await User.findById(followeeId);
+      const follower = await User.findById(followerId);
+      
+      console.log("FollowerId="+followee + "  FolloweeeId="+follower)
+
+      if (!followee || !follower) {
+          return res.status(404).json("User not found");
+      }
+
+      if (followee.followers.some(follower => follower._id.toString() === followee._id.toString())) {
+        return res.status(403).json("You already follow this user");
+      }
+      
+      
+
+      await followee.updateOne({ $push: { followers: followerId } });
+      await follower.updateOne({ $push: { following: followeeId } });
+
+      res.status(200).json("Following the user!");
+  } catch (err) {
+      next(err);
+  }
+}
 
 
     export const unFollow = async (req, res, next) => {
@@ -121,11 +154,17 @@ export const follow = async (req, res, next) => {
 
       export const numberOfFollowers = async (req, res, next) => {
         try {
-            const user = await User.findById(req.params.id).populate("followers");
-            const followersCount = user.followers.length;
-            res.status(200).json({ followersCount });
-        } catch (err) {
-            next(err);
+            const userId = req.params.userId; // Extract the user ID from the request parameter
+    
+            // Find the user by their ID and populate the 'followers' field to get an array of followers
+            const user = await User.findById(userId).populate('followers');
+    
+            // Get the total number of followers from the populated 'followers' field
+            const totalFollowers = user.followers.length;
+    
+            res.status(200).json({ totalFollowers });
+        } catch (error) {
+            next(error); // Pass the error to the error handling middleware
         }
     };
     
@@ -134,11 +173,14 @@ export const follow = async (req, res, next) => {
         try {
             const user = await User.findById(req.params.id).populate("following");
             const followingCount = user.following.length;
+            console.log("Following count="+followingCount)
             res.status(200).json({ followingCount });
         } catch (err) {
             next(err);
         }
-    };
+        
+      }
+    
     
   export const tweetCount = async (req,res,next) => {
 
@@ -147,7 +189,7 @@ export const follow = async (req, res, next) => {
 
       // Query the database to count the tweets for the specific user
       const tweetCount = await Tweet.countDocuments({ userId });
-
+      console.log("TweetCount="+tweetCount)
       res.status(200).json({ tweetCount });
       
 

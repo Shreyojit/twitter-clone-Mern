@@ -14,11 +14,7 @@ export const getUser = async(req,res,next) => {
 
 export const update = async (req,res,next) => {
   
-   
-   
-     
-    
-        try {
+      try {
           const updatedUser = await User.findByIdAndUpdate(
             req.params.id,
             {
@@ -101,13 +97,11 @@ export const follow = async (req, res, next) => {
   const followerId = req.body.id;
   const followeeId = req.params.id;
 
-  console.log("FollowerId="+followerId+"  FolloweeeId="+followeeId)
-
+  
   try {
       const followee = await User.findById(followeeId);
       const follower = await User.findById(followerId);
       
-      console.log("FollowerId="+followee + "  FolloweeeId="+follower)
 
       if (!followee || !follower) {
           return res.status(404).json("User not found");
@@ -154,13 +148,22 @@ export const follow = async (req, res, next) => {
 
       export const numberOfFollowers = async (req, res, next) => {
         try {
-            const userId = req.params.userId; // Extract the user ID from the request parameter
+            const userId = req.params.id; // Extract the user ID from the request parameter
     
             // Find the user by their ID and populate the 'followers' field to get an array of followers
             const user = await User.findById(userId).populate('followers');
     
+            if (!user) {
+                return res.status(404).json({ error: "User not found" });
+            }
+    
             // Get the total number of followers from the populated 'followers' field
+
+            console.log(`FOLLOWERS COUNT = ${user.followers}`);
+
             const totalFollowers = user.followers.length;
+    
+            console.log(`FOLLOWERS COUNT = ${totalFollowers}`);
     
             res.status(200).json({ totalFollowers });
         } catch (error) {
@@ -173,7 +176,7 @@ export const follow = async (req, res, next) => {
         try {
             const user = await User.findById(req.params.id).populate("following");
             const followingCount = user.following.length;
-            console.log("Following count="+followingCount)
+            console.log(`FOLLOWing COUNT = ${followingCount}`);
             res.status(200).json({ followingCount });
         } catch (err) {
             next(err);
@@ -189,7 +192,9 @@ export const follow = async (req, res, next) => {
 
       // Query the database to count the tweets for the specific user
       const tweetCount = await Tweet.countDocuments({ userId });
-      console.log("TweetCount="+tweetCount)
+      
+      console.log(`Tweet COUNT = ${tweetCount}`);
+
       res.status(200).json({ tweetCount });
       
 

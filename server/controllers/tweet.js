@@ -140,7 +140,7 @@ export const getTrendingTags = async (req,res,next) => {
 
     const topTags = tagsData.map((tag) => tag._id);
 
-    console.log("Top 5 Tags:", topTags);
+   
 
     res.status(200).json(topTags);
   } catch (err) {

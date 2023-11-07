@@ -91,12 +91,12 @@ export const getComments = async (req, res, next) => {
   try {
     const tId = req.params.id;
 
-    console.log(tId);
+   
 
     // Find comments using the provided tweetId
     const comments = await Comment.find({ tweetId : tId });
 
-    console.log(comments);
+    
 
     res.status(200).json(comments);
   } catch (err) {

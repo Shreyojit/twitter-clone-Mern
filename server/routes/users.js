@@ -32,7 +32,7 @@ router.get("/:id/followersCount", numberOfFollowers)
 
 router.get("/:id/followingCount", numberOfFollowing)
 
-router.get('/:userId/tweetsCount',tweetCount)
+router.get('/:id/tweetsCount',tweetCount)
 
 
 export default router;

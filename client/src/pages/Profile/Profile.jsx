@@ -38,6 +38,7 @@ const Profile = () => {
         const fetchFollowers = async () => {
             try {
                 const response = await axios.get(`http://localhost:8801/api/users/${id}/totalFollowers`);
+                console.log("Response is"+response)
                 setFollowersCount(response.data.totalFollowers);
             } catch (error) {
                 console.error('Error fetching total followers:', error);
@@ -46,7 +47,7 @@ const Profile = () => {
         };
 
         fetchFollowers();
-    }, []);
+    }, [id]);
 
 
   
